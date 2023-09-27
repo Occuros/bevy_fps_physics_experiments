@@ -1,0 +1,23 @@
+(
+  name: "small_box",
+  schematics: {
+    "snuckles::Playable": (),    
+    "bevy_proto::custom::SpatialBundle": (
+      transform: (
+        translation: (
+          x: 0,
+          y: 2.5,
+          z: 0.0
+        )
+      ),
+    ),
+    "snuckles::components::SmallBox":(),
+    "snuckles::components::rapier_helpers::ColliderProto": (
+      x:0.25,
+      y:0.25,
+      z:0.25,
+    ),
+    "snuckles::components::rapier_helpers::RigidbodyProto": Dynamic,
+  },
+  children:["small_box_model"]
+)

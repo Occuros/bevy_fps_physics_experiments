@@ -1,0 +1,16 @@
+(
+  name: "small_box_model",
+  schematics: {
+    "snuckles::Playable": (),    
+    "bevy_proto::custom::SceneBundle": (
+      scene: AssetPath("models/box-small.glb#Scene0"),
+      transform: (
+        translation: (
+          x: 0,
+          y: -0.25,
+          z: 0.0
+        )
+      ),
+    ),
+  }
+)

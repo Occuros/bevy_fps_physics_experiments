@@ -1,0 +1,15 @@
+(
+  name: "blaster_model",
+  schematics: {
+    "bevy_proto::custom::SceneBundle": (
+      scene: AssetPath("models/blasterB.glb#Scene0"),
+      transform: (
+        translation: (
+          x: 0.0,
+          y: 0.0,
+          z: 0.0
+        )
+      ),
+    ),
+  }
+)

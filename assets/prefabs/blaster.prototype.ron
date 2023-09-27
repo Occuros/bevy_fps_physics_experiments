@@ -1,0 +1,67 @@
+(
+    name: "blaster",
+    schematics: {
+        "bevy_proto::custom::SpatialBundle": (
+            transform: (
+                translation: (
+                    x: 0.0,
+                    y: 0.02,
+                    z: 0.0
+                )
+            ),
+        ),
+        "snuckles::components::SmallBox":(),
+        "snuckles::components::rapier_helpers::RigidbodyProto": Fixed,
+    },
+    children:["blaster_model",
+        (
+            value: Inline((
+                name: "c83ef678-5bde-11ee-8c99-0242ac120002",
+                schematics: {
+                    "bevy_proto::custom::SpatialBundle": (
+                        transform: (
+                            translation: (
+                                x: 0.0,
+                                y: 0.02,
+                                z: 0.0
+                            )
+                        ),
+                    ),
+                    "snuckles::components::rapier_helpers::ColliderProto": (
+                        x:0.06,
+                        y:0.08,
+                        z:0.2,
+                    ),
+                }),
+            ),
+        ),
+        (
+            value: Inline((
+                name: "c83ef678-5bde-11ee-8c99-0242ac120005",
+                schematics: {
+                    "bevy_proto::custom::SpatialBundle": (
+                        transform: (
+                            translation: (
+                                x: 0.0,
+                                y: -0.30,
+                                z: -0.12
+                            ),
+                            rotation: (
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            )
+                        ),
+                    ),
+                    "snuckles::components::rapier_helpers::ColliderProto": (
+                        x:0.04,
+                        y:0.08,
+                        z:0.05,
+                    ),
+                }),
+            ),
+        )
+    ]
+
+)
