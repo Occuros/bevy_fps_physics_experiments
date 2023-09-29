@@ -1,15 +1,14 @@
 pub mod player_components;
 pub mod player_systems;
 
+use crate::Player;
 use bevy::prelude::*;
 use bevy::window::CursorGrabMode;
-// use bevy_fps_controller::controller::fps_controller_render;
-// use bevy_fps_controller::controller::{FpsController, FpsControllerInput, LogicalPlayer};
-use bevy_fps_controller::controller::FpsController;
+use bevy_fps_controller::controller::fps_controller_render;
+use bevy_fps_controller::controller::{FpsController, FpsControllerInput, LogicalPlayer};
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::TAU;
 
-use crate::player::player_systems::*;
 use crate::MainCamera;
 
 use self::player_components::{Grabbable, Grabber, PIDController, RightHand};
@@ -26,11 +25,10 @@ impl Plugin for LocomotionPlugin {
             .add_systems(PostUpdate, draw_crossair)
             .add_systems(Update, grabber_target_checking_system)
             .add_systems(Update, grabbing_system)
-            // .add_systems(Update, move_player_system)
             .add_systems(
                 Update,
-                (move_player_system, right_hand_placement_system)
-                    .chain() // .after(fps_controller_render)
+                right_hand_placement_system
+                    .after(fps_controller_render)
                     .before(PhysicsSet::SyncBackend), // .in_set(RapierTransformPropagateSet),
             )
             .register_type::<Grabber>()
@@ -61,51 +59,51 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    // commands
-    //     .spawn((
-    //         Collider::capsule(Vec3::Y * 0.5, Vec3::Y * 1.5, 0.25),
-    //         Friction {
-    //             coefficient: 0.0,
-    //             combine_rule: CoefficientCombineRule::Min,
-    //         },
-    //         Restitution {
-    //             coefficient: 0.0,
-    //             combine_rule: CoefficientCombineRule::Min,
-    //         },
-    //         ActiveEvents::COLLISION_EVENTS,
-    //         Velocity::zero(),
-    //         RigidBody::Dynamic,
-    //         Sleeping::disabled(),
-    //         LockedAxes::ROTATION_LOCKED,
-    //         AdditionalMassProperties::Mass(1.0),
-    //         GravityScale(0.0),
-    //         Ccd { enabled: true }, // Prevent clipping when going fast
-    //         TransformBundle::from_transform(Transform::from_translation(SPAWN_POINT)),
-    //         LogicalPlayer(0),
-    //         FpsControllerInput {
-    //             pitch: -TAU / 12.0,
-    //             yaw: TAU * 5.0 / 8.0,
-    //             ..default()
-    //         },
-    //         FpsController { ..default() },
-    //     ))
-    //     .insert((
-    //         PbrBundle {
-    //             transform: Transform::from_xyz(0.0, 0.0, 0.0),
-    //             mesh: meshes.add(
-    //                 shape::Icosphere {
-    //                     radius: 0.1,
-    //                     ..default()
-    //                 }
-    //                 .try_into()
-    //                 .unwrap(),
-    //             ),
-    //             material: materials.add(Color::BLUE.into()),
-    //             ..default()
-    //         },
-    //         Name::new("Player"),
-    //         Player,
-    //     ));
+    commands
+        .spawn((
+            Collider::capsule(Vec3::Y * 0.5, Vec3::Y * 1.5, 0.25),
+            Friction {
+                coefficient: 0.0,
+                combine_rule: CoefficientCombineRule::Min,
+            },
+            Restitution {
+                coefficient: 0.0,
+                combine_rule: CoefficientCombineRule::Min,
+            },
+            ActiveEvents::COLLISION_EVENTS,
+            Velocity::zero(),
+            RigidBody::Dynamic,
+            Sleeping::disabled(),
+            LockedAxes::ROTATION_LOCKED,
+            AdditionalMassProperties::Mass(1.0),
+            GravityScale(0.0),
+            Ccd { enabled: true }, // Prevent clipping when going fast
+            TransformBundle::from_transform(Transform::from_translation(SPAWN_POINT)),
+            LogicalPlayer(0),
+            FpsControllerInput {
+                pitch: -TAU / 12.0,
+                yaw: TAU * 5.0 / 8.0,
+                ..default()
+            },
+            FpsController { ..default() },
+        ))
+        .insert((
+            PbrBundle {
+                transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                mesh: meshes.add(
+                    shape::Icosphere {
+                        radius: 0.1,
+                        ..default()
+                    }
+                    .try_into()
+                    .unwrap(),
+                ),
+                material: materials.add(Color::BLUE.into()),
+                ..default()
+            },
+            Name::new("Player"),
+            Player,
+        ));
 
     commands.spawn((
         PbrBundle {
@@ -148,11 +146,6 @@ fn right_hand_placement_system(
 
     right_hand_transform.translation = camera.transform_point(right_hand.camera_offset);
     right_hand_transform.look_to(camera.forward(), Vec3::Y);
-
-    // let position = camera.translation + Vec3::Z * 3.50;
-    // let rotation = Quat::from_rotation_y(time.delta_seconds() / 0.8);
-    // right_hand_transform.translation = camera.translation + Vec3::Y * 1.0;
-    // right_hand_transform.rotate_around(position, rotation);
 }
 
 fn respawn(mut query: Query<(&mut Transform, &mut Velocity)>) {

@@ -20,31 +20,31 @@ use std::time::Duration;
 fn main() {
     color_eyre::install().unwrap();
 
-    App::new()
-        .add_plugins(DefaultPlugins.set(AssetPlugin {
-            // Enable hot-reloading of assets:
-            watch_for_changes: ChangeWatcher::with_delay(Duration::from_millis(200)),
-            ..default()
-        }))
-        .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
-        .add_plugins(RapierDebugRenderPlugin::default())
-        .add_plugins(EditorPlugin::default())
-        .add_plugins(ProtoPlugin::default())
-        // .add_plugins(FpsControllerPlugin)
-        .add_plugins(FrameTimeDiagnosticsPlugin)
-        .add_plugins(LocomotionPlugin)
-        .add_plugins(Sprite3dPlugin)
-        .add_plugins(ExperimentsPlugin)
-        .insert_resource(AmbientLight {
-            color: Color::WHITE,
-            brightness: 0.5,
-        })
-        .add_systems(Startup, load)
-        .add_systems(Startup, setup)
-        .add_plugins(RapierHelperPlugin)
-        .register_type::<SmallBox>()
-        .register_type::<Playable>()
-        .run();
+    let mut app = App::new();
+    app.add_plugins(DefaultPlugins.build().set(AssetPlugin {
+        // Enable hot-reloading of assets:
+        watch_for_changes: ChangeWatcher::with_delay(Duration::from_millis(200)),
+        ..default()
+    }))
+    .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
+    .add_plugins(RapierDebugRenderPlugin::default())
+    .add_plugins(EditorPlugin::default())
+    .add_plugins(ProtoPlugin::default())
+    .add_plugins(FpsControllerPlugin)
+    .add_plugins(FrameTimeDiagnosticsPlugin)
+    .add_plugins(LocomotionPlugin)
+    .add_plugins(Sprite3dPlugin)
+    .add_plugins(ExperimentsPlugin)
+    .insert_resource(AmbientLight {
+        color: Color::WHITE,
+        brightness: 0.5,
+    })
+    .add_systems(Startup, load)
+    .add_systems(Startup, setup)
+    .add_plugins(RapierHelperPlugin)
+    .register_type::<SmallBox>()
+    .register_type::<Playable>();
+    app.run();
 }
 
 // A schematic can be pretty much anything that mutates the world.

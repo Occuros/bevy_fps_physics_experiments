@@ -15,6 +15,7 @@ bevy_rapier3d = { version = "*", features = [ "simd-stable", "debug-render-3d" ]
 bevy_mod_component_mirror = {git="https://github.com/devildahu/bevy_mod_component_mirror.git"}
 bevy_fps_controller = {git="https://github.com/qhdwight/bevy_fps_controller.git"}
 bevy_sprite3d = "2.6.0"
+bevy_mod_debugdump = "0.8.1"
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]

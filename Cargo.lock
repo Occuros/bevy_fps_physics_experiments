@@ -4274,6 +4274,7 @@ dependencies = [
  "bevy_editor_pls",
  "bevy_fps_controller",
  "bevy_mod_component_mirror",
+ "bevy_mod_debugdump",
  "bevy_proto",
  "bevy_rapier3d 0.22.0",
  "bevy_sprite3d",
