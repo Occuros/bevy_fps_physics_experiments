@@ -1,20 +1,36 @@
 use bevy::prelude::*;
+use bevy_fps_controller::controller::fps_controller_render;
 use bevy_proto::prelude::*;
+use bevy_rapier3d::prelude::*;
+pub mod components;
+pub mod systems;
 
+use systems::*;
+
+#[allow(dead_code)]
 const PREFAB_BLASTER: &str = "blaster";
 
 pub struct ExperimentsPlugin;
 
 impl Plugin for ExperimentsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            spawn_models.run_if(prototypes_ready(["Cube", "small_box"]).and_then(run_once())),
-        )
-        .add_systems(
-            Update,
-            spawn_with_reload.run_if(prototypes_ready(["small_box", PREFAB_BLASTER])),
-        );
+        app
+            // .add_systems(
+            //     Update,
+            //     spawn_models.run_if(prototypes_ready(["Cube", "small_box"]).and_then(run_once())),
+            // )
+            // .add_systems(
+            //     Update,
+            //     spawn_with_reload.run_if(prototypes_ready(["small_box", PREFAB_BLASTER])),
+            // )
+            .add_systems(Startup, spawn_experiment)
+            .add_systems(
+                Update,
+                rotate_thing_1
+                    .after(fps_controller_render)
+                    .before(PhysicsSet::SyncBackend)
+                    .in_set(RapierTransformPropagateSet),
+            );
     }
 }
 
@@ -31,6 +47,7 @@ pub fn spawn_models(mut commands: ProtoCommands) {
         .insert(Transform::from_xyz(0.0, 10.0, 0.0));
 }
 
+#[allow(dead_code)]
 pub fn spawn_with_reload(
     mut commands: ProtoCommands,
     keyboard_input: Res<Input<KeyCode>>,

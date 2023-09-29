@@ -12,6 +12,7 @@ use bevy_fps_controller::controller::*;
 use bevy_proto::prelude::*;
 use bevy_rapier3d::prelude::*;
 use bevy_sprite3d::Sprite3dPlugin;
+use experiments::ExperimentsPlugin;
 use player::player_components::*;
 use player::LocomotionPlugin;
 use std::time::Duration;
@@ -29,10 +30,11 @@ fn main() {
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(EditorPlugin::default())
         .add_plugins(ProtoPlugin::default())
-        .add_plugins(FpsControllerPlugin)
+        // .add_plugins(FpsControllerPlugin)
         .add_plugins(FrameTimeDiagnosticsPlugin)
         .add_plugins(LocomotionPlugin)
         .add_plugins(Sprite3dPlugin)
+        .add_plugins(ExperimentsPlugin)
         .insert_resource(AmbientLight {
             color: Color::WHITE,
             brightness: 0.5,
@@ -114,27 +116,9 @@ fn setup(
             },
             RenderPlayer(0),
             MainCamera,
+            crate::player::player_components::PlayerInput { ..default() },
         ))
         .with_children(|commands| {
-            commands.spawn((
-                PbrBundle {
-                    transform: Transform::from_xyz(0.5, -0.3, -0.9),
-                    mesh: meshes.add(
-                        shape::Icosphere {
-                            radius: 0.1,
-                            ..default()
-                        }
-                        .try_into()
-                        .unwrap(),
-                    ),
-                    material: materials.add(Color::ORANGE.into()),
-                    ..default()
-                },
-                RightHand,
-                Name::new("right_hand"),
-                Grabber { ..default() },
-            ));
-
             commands.spawn((
                 PbrBundle {
                     transform: Transform::from_xyz(-0.5, -0.3, -0.9),
@@ -171,7 +155,9 @@ fn spawn_small_box(position: Vec3, commands: &mut Commands, asset_server: &Asset
             CubeCollider {
                 size: Vec3::splat(size),
             },
+            Velocity { ..default() },
             Grabbable,
+            PIDController::new(0.7, 0.0, 0.3),
         ))
         .with_children(|commands| {
             commands.spawn(SceneBundle {
@@ -192,6 +178,8 @@ fn spawn_blaster(position: Vec3, commands: &mut Commands, asset_server: &AssetSe
             RigidBody::Dynamic,
             Name::new("blaster"),
             Grabbable,
+            Velocity { ..default() },
+            PIDController::new(1.7, 0.0, 0.3),
         ))
         .with_children(|commands| {
             commands.spawn(SceneBundle {
@@ -205,11 +193,7 @@ fn spawn_blaster(position: Vec3, commands: &mut Commands, asset_server: &AssetSe
                     transform: Transform::from_xyz(0.0, 0.04, 0.0),
                     ..default()
                 },
-                // CubeGizmo {
-                //     color: Color::GREEN,
-                // },
                 Collider::cuboid(0.1 * 0.5, 0.17 * 0.5, 0.41 * 0.5),
-                // Grabbable,
             ));
             commands.spawn((
                 SpatialBundle {
@@ -217,9 +201,6 @@ fn spawn_blaster(position: Vec3, commands: &mut Commands, asset_server: &AssetSe
                     ..default()
                 },
                 Collider::cuboid(0.1 * 0.5, 0.13 * 0.5, 0.13 * 0.5),
-                // Grabbable, // CubeGizmo {
-                //     color: Color::GREEN,
-                // },
             ));
         });
 }
