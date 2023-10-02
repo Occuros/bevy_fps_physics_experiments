@@ -17,6 +17,7 @@ pub struct Grabber {
     pub potential_target: Option<Entity>,
     pub attracted_target: Option<Entity>,
     pub grabbed_entity: Option<Entity>,
+    pub joint: Option<Entity>,
 }
 
 #[derive(Component, Reflect)]
@@ -31,6 +32,7 @@ pub struct PIDController {
     last_error: Vec3,
 }
 
+#[allow(dead_code)]
 impl PIDController {
     pub fn new(p_factor: f32, i_factor: f32, d_factor: f32) -> Self {
         Self {

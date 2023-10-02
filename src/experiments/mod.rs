@@ -1,7 +1,5 @@
 use bevy::prelude::*;
-use bevy_fps_controller::controller::fps_controller_render;
 use bevy_proto::prelude::*;
-use bevy_rapier3d::prelude::*;
 pub mod components;
 pub mod systems;
 
@@ -24,13 +22,7 @@ impl Plugin for ExperimentsPlugin {
             //     spawn_with_reload.run_if(prototypes_ready(["small_box", PREFAB_BLASTER])),
             // )
             .add_systems(Startup, spawn_experiment)
-            .add_systems(
-                Update,
-                rotate_thing_1
-                    .after(fps_controller_render)
-                    .before(PhysicsSet::SyncBackend)
-                    .in_set(RapierTransformPropagateSet),
-            );
+            .add_systems(Update, rotate_thing_1);
     }
 }
 

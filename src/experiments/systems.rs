@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::*;
+use bevy_xpbd_3d::prelude::*;
 // use std::f32::consts::TAU;
 
 #[derive(Component, Default, Reflect)]
@@ -18,9 +18,8 @@ pub fn spawn_experiment(mut commands: Commands, asset_server: Res<AssetServer>) 
                 ..Default::default()
             },
             // Collider::cuboid(size, size, size),
-            RigidBody::KinematicPositionBased,
+            RigidBody::Kinematic,
             Name::new("little_cube"),
-            Velocity { ..default() },
             Thing1,
         ))
         .with_children(|commands| {
@@ -41,7 +40,6 @@ pub fn spawn_experiment(mut commands: Commands, asset_server: Res<AssetServer>) 
             Collider::cuboid(size, size, size),
             RigidBody::Dynamic,
             Name::new("little_cube"),
-            Velocity { ..default() },
         ))
         .with_children(|commands| {
             commands.spawn(SceneBundle {
@@ -52,12 +50,9 @@ pub fn spawn_experiment(mut commands: Commands, asset_server: Res<AssetServer>) 
         })
         .id();
 
-    let joint = FixedJointBuilder::new().local_anchor1(Vec3::new(1.5, 0.0, 0.0));
-    // .local_basis1(Quat::from_rotation_y(TAU * 0.5));
-    commands
-        .get_entity(cube_1_entity)
-        .unwrap()
-        .insert(ImpulseJoint::new(cube_2_entity, joint));
+    commands.spawn(
+        FixedJoint::new(cube_1_entity, cube_2_entity).with_local_anchor_1(Vec3::new(1.5, 0.0, 0.0)),
+    );
 }
 
 pub fn rotate_thing_1(mut thing1_query: Query<&mut Transform, With<Thing1>>, time: Res<Time>) {

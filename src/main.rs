@@ -1,18 +1,18 @@
 mod components;
 mod experiments;
+mod general;
 mod player;
 
-use crate::components::rapier_helpers::*;
 use crate::components::SmallBox;
 use bevy::asset::ChangeWatcher;
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 use bevy::prelude::*;
 use bevy_editor_pls::prelude::*;
-use bevy_fps_controller::controller::*;
 use bevy_proto::prelude::*;
-use bevy_rapier3d::prelude::*;
 use bevy_sprite3d::Sprite3dPlugin;
+use bevy_xpbd_3d::prelude::*;
 use experiments::ExperimentsPlugin;
+use general::GeneralPlugin;
 use player::player_components::*;
 use player::LocomotionPlugin;
 use std::time::Duration;
@@ -26,22 +26,20 @@ fn main() {
         watch_for_changes: ChangeWatcher::with_delay(Duration::from_millis(200)),
         ..default()
     }))
-    .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
-    .add_plugins(RapierDebugRenderPlugin::default())
+    .add_plugins(PhysicsPlugins::default())
     .add_plugins(EditorPlugin::default())
     .add_plugins(ProtoPlugin::default())
-    .add_plugins(FpsControllerPlugin)
     .add_plugins(FrameTimeDiagnosticsPlugin)
     .add_plugins(LocomotionPlugin)
     .add_plugins(Sprite3dPlugin)
     .add_plugins(ExperimentsPlugin)
+    .add_plugins(GeneralPlugin)
     .insert_resource(AmbientLight {
         color: Color::WHITE,
         brightness: 0.5,
     })
     .add_systems(Startup, load)
     .add_systems(Startup, setup)
-    .add_plugins(RapierHelperPlugin)
     .register_type::<SmallBox>()
     .register_type::<Playable>();
     app.run();
@@ -81,7 +79,7 @@ fn setup(
                 ..default()
             },
             Collider::cuboid(plane_size.x * 0.5, plane_size.y * 0.5, plane_size.z * 0.5),
-            RigidBody::Fixed,
+            RigidBody::Static,
         ))
         .with_children(|commands| {
             commands.spawn(PbrBundle {
@@ -114,7 +112,6 @@ fn setup(
                 transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
                 ..default()
             },
-            RenderPlayer(0),
             MainCamera,
             crate::player::player_components::PlayerInput { ..default() },
         ))
@@ -142,65 +139,70 @@ fn setup(
 #[allow(dead_code)]
 fn spawn_small_box(position: Vec3, commands: &mut Commands, asset_server: &AssetServer) {
     let box_gltf = asset_server.load("models/box-small.glb#Scene0");
-    let size = 0.25;
-    commands
-        .spawn((
-            SpatialBundle {
-                transform: Transform::from_translation(position),
-                ..Default::default()
-            },
+    let size = 0.5;
+    commands.spawn((
+        SceneBundle {
+            scene: box_gltf,
+            transform: Transform::from_translation(position),
+            ..default()
+        },
+        Collider::compound(vec![(
+            Vec3::new(0.0, 0.25, 0.0),
+            Quat::IDENTITY,
             Collider::cuboid(size, size, size),
-            RigidBody::Dynamic,
-            Name::new("little_cube"),
-            CubeCollider {
-                size: Vec3::splat(size),
-            },
-            Velocity { ..default() },
-            Grabbable,
-            PIDController::new(0.7, 0.0, 0.3),
-        ))
-        .with_children(|commands| {
-            commands.spawn(SceneBundle {
-                scene: box_gltf,
-                transform: Transform::from_xyz(0.0, -0.25, 0.0),
-                ..default()
-            });
-        });
+        )]),
+        RigidBody::Dynamic,
+        Name::new("little_cube"),
+        Grabbable,
+        PIDController::new(0.7, 0.0, 0.3),
+    ));
 }
 
 fn spawn_blaster(position: Vec3, commands: &mut Commands, asset_server: &AssetServer) {
-    commands
-        .spawn((
-            SpatialBundle {
-                transform: Transform::from_translation(position),
-                ..Default::default()
-            },
-            RigidBody::Dynamic,
-            Name::new("blaster"),
-            Grabbable,
-            Velocity { ..default() },
-            PIDController::new(1.7, 0.0, 0.3),
-        ))
-        .with_children(|commands| {
-            commands.spawn(SceneBundle {
-                scene: asset_server.load("models/blasterB.glb#Scene0"),
-                transform: Transform::from_xyz(0.0, 0.0, 0.0),
-                ..default()
-            });
-            commands.spawn((
-                Name::new("top_collider"),
-                SpatialBundle {
-                    transform: Transform::from_xyz(0.0, 0.04, 0.0),
-                    ..default()
-                },
-                Collider::cuboid(0.1 * 0.5, 0.17 * 0.5, 0.41 * 0.5),
-            ));
-            commands.spawn((
-                SpatialBundle {
-                    transform: Transform::from_xyz(0.0, -0.08, -0.13),
-                    ..default()
-                },
-                Collider::cuboid(0.1 * 0.5, 0.13 * 0.5, 0.13 * 0.5),
-            ));
-        });
+    let top_collider = (
+        Vec3::new(0.0, 0.04, 0.0),
+        Quat::IDENTITY,
+        Collider::cuboid(0.1, 0.17, 0.41),
+    );
+
+    let bottom_collider = (
+        Vec3::new(0.0, -0.08, -0.13),
+        Quat::IDENTITY,
+        Collider::cuboid(0.1, 0.13, 0.13),
+    );
+
+    commands.spawn((
+        SceneBundle {
+            scene: asset_server.load("models/blasterB.glb#Scene0"),
+            transform: Transform::from_translation(position),
+            ..default()
+        },
+        RigidBody::Dynamic,
+        Collider::compound(vec![top_collider, bottom_collider]),
+        Name::new("blaster"),
+        Grabbable,
+        PIDController::new(1.7, 0.0, 0.3),
+    ));
+    // .with_children(|commands| {
+    //     commands.spawn(SceneBundle {
+    //         scene: asset_server.load("models/blasterB.glb#Scene0"),
+    //         transform: Transform::from_xyz(0.0, 0.0, 0.0),
+    //         ..default()
+    //     });
+    // commands.spawn((
+    //     Name::new("top_collider"),
+    //     SpatialBundle {
+    //         transform: Transform::from_xyz(0.0, 0.04, 0.0),
+    //         ..default()
+    //     },
+    //     Collider::cuboid(0.1 * 0.5, 0.17 * 0.5, 0.41 * 0.5),
+    // ));
+    // commands.spawn((
+    //     SpatialBundle {
+    //         transform: Transform::from_xyz(0.0, -0.08, -0.13),
+    //         ..default()
+    //     },
+    //     Collider::cuboid(0.1 * 0.5, 0.13 * 0.5, 0.13 * 0.5),
+    // ));
+    // });
 }

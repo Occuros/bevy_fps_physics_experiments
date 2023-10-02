@@ -1,13 +1,6 @@
-pub mod rapier_helpers;
-
 use bevy::prelude::*;
 use bevy_proto::prelude::*;
 
-
-
-#[derive(Component, Schematic)]
-#[derive(Reflect)]
+#[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic)]
-pub struct SmallBox {
-
-}
+pub struct SmallBox {}
